@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,6 +22,8 @@ namespace Toorah.GradientEditor
         [SerializeField] GradientKey m_selectedPoint;
         [SerializeField] GradientKey m_dragging;
 
+        bool m_showDebug;
+
         private void OnEnable()
         {
             m_asset = target as GradientAsset;
@@ -47,6 +47,7 @@ namespace Toorah.GradientEditor
         private void OnDisable()
         {
             EditorApplication.update -= Update;
+            EditorApplication.update -= PlayDebug;
         }
 
         private void Update()
@@ -76,43 +77,59 @@ namespace Toorah.GradientEditor
             }
         }
 
-        float testPos;
-
-        public override void OnInspectorGUI()
+        float m_testPos;
+        bool m_play;
+        double m_time;
+        GUIStyle m_boxStyle;
+        void GenerateStyles()
         {
-            serializedObject.Update();
+            if(m_boxStyle == null)
+            {
+                m_boxStyle = new GUIStyle(EditorStyles.helpBox);
+                m_boxStyle.padding = new RectOffset(5, 5, 5, 10);
+            }
+        }
 
-            GUILayout.Space(10);
-
-            Rect rect = GUILayoutUtility.GetRect(200, 30);
-            rect.x += 20;
-            rect.width -= 40;
-            EditorGUI.DrawTextureTransparent(rect, m_gradientTexture, ScaleMode.StretchToFill);
-
-
+        void DrawColorKeys(Rect rect)
+        {
             Handles.BeginGUI();
             for (int i = 0; i < m_points.Count; i++)
             {
-                var p = m_points[i];
-                bool isSelected = m_selectedPoint == p;
-                Color outline = isSelected ? Color.yellow : Color.grey;
-                Rect r = new Rect(rect.x + rect.width * p.position - 2, rect.y - 2, 4, rect.height + 4);
-                Handles.DrawSolidRectangleWithOutline(r, Color.black * 0.2f, outline);
-
-                bool isMouseOver = r.Contains(Event.current.mousePosition);
-
-                if (Event.current.type == EventType.MouseDown && isMouseOver)
-                {
-                    m_selectedPoint = p;
-                    m_dragging = p;
-                }
-                if (Event.current.type == EventType.MouseUp && m_dragging != null)
-                {
-                    m_dragging = null;
-                }
+                DrawColorKey(rect, m_points[i]);
             }
             Handles.EndGUI();
+        }
+        void DrawColorKey(Rect rect, GradientKey key)
+        {
+            bool isSelected = m_selectedPoint == key;
 
+            Color outline = isSelected ? Color.yellow : Color.grey;
+            Rect r = new Rect(rect.x + rect.width * key.position - 2, rect.y - 2, 4, rect.height + 4);
+            Handles.DrawSolidRectangleWithOutline(r, Color.black * 0.2f, outline);
+
+            bool isMouseOver = r.Contains(Event.current.mousePosition);
+
+            if (Event.current.type == EventType.MouseDown && isMouseOver)
+            {
+                m_selectedPoint = key;
+                m_dragging = key;
+            }
+            if (Event.current.type == EventType.MouseUp && m_dragging != null)
+            {
+                m_dragging = null;
+            }
+        }
+
+        void DrawGradientTexture(out Rect rect)
+        {
+            rect = GUILayoutUtility.GetRect(200, 30);
+            rect.x += 20;
+            rect.width -= 40;
+            EditorGUI.DrawTextureTransparent(rect, m_gradientTexture, ScaleMode.StretchToFill);
+        }
+
+        void HandleDrag(Rect rect)
+        {
             if (m_dragging != null && Event.current.type == EventType.MouseDrag)
             {
                 var mousePos = Event.current.mousePosition;
@@ -120,39 +137,64 @@ namespace Toorah.GradientEditor
                 m_dragging.position = p;
                 Event.current.Use();
             }
+        }
 
-            using(new GUILayout.HorizontalScope())
+        void AddRemoveButtons()
+        {
+            using (new GUILayout.HorizontalScope())
             {
                 GUILayout.FlexibleSpace();
 
-                if (GUILayout.Button("Add"))
+                if (m_points.Count < 100)
                 {
-                    m_asset.keys.Add(new GradientKey(Color.white, 0.5f));
-                    EditorUtility.SetDirty(m_asset);
+                    if (GUILayout.Button(new GUIContent("+", "Add Key")))
+                    {
+                        m_asset.keys.Add(new GradientKey(Color.white, 0.5f));
+                        EditorUtility.SetDirty(m_asset);
+                    }
                 }
-                if(m_selectedPoint != null && m_points.Count > 1){
-                    if (GUILayout.Button("Remove"))
+                if (m_selectedPoint != null && m_points.Count > 1)
+                {
+                    if (GUILayout.Button(new GUIContent("-", $"Remove Key [{m_points.IndexOf(m_selectedPoint)}]")))
                     {
                         m_asset.keys.Remove(m_selectedPoint);
                         m_selectedPoint = null;
                         EditorUtility.SetDirty(m_asset);
                     }
                 }
+                GUILayout.Space(20);
             }
-
-
-            GUILayout.Space(10);
-            if (m_selectedPoint != null)
+        }
+        void DrawSelectedPointBox()
+        {
+            if(m_points == null || m_points.Count == 0)
             {
-                var p = m_selectedPoint;
-                p.color = EditorGUILayout.ColorField(p.color);
-                p.position = EditorGUILayout.Slider(p.position, 0, 1);
+                EditorGUILayout.HelpBox("There are no color keys added", MessageType.Warning, true);
             }
-            GUILayout.Space(10);
+            else if (m_points.IndexOf(m_selectedPoint) != -1)
+            {
+                using (new GUILayout.VerticalScope(m_boxStyle))
+                {
+                    DrawPointGUI(m_selectedPoint);
+                }
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("Select a color key from above to edit its values.", MessageType.Info, true);
+            }
+        }
+        void DrawPointGUI(GradientKey key)
+        {
+            GUILayout.Label($"Point [{m_points.IndexOf(key)}]");
+            key.color = EditorGUILayout.ColorField(key.color);
+            key.position = EditorGUILayout.Slider(key.position, 0, 1);
+        }
+        void ExportButton()
+        {
             if (GUILayout.Button("Export"))
             {
                 var path = EditorUtility.SaveFilePanelInProject("Gradient to Texture", "Gradient", "png", "");
-                if(path != "")
+                if (path != "")
                 {
                     Texture2D tex = new Texture2D(2048, 4);
                     RenderTexture.active = m_gradientTexture;
@@ -165,13 +207,70 @@ namespace Toorah.GradientEditor
                     AssetDatabase.Refresh();
                 }
             }
+        }
+        void DrawDebug()
+        {
+            using (new GUILayout.VerticalScope(m_boxStyle))
+            {
+                EditorGUI.indentLevel++;
+                m_showDebug = EditorGUILayout.Foldout(m_showDebug, "Debug", true);
+                if (m_showDebug)
+                {
+                    m_testPos = EditorGUILayout.Slider(m_testPos, 0, 1);
+                    var col = m_asset.Evaluate(m_testPos);
+                    EditorGUILayout.ColorField(col);
+                    using(new EditorGUI.DisabledGroupScope(m_play))
+                    {
+                        if (GUILayout.Button("Play"))
+                        {
+                            m_play = true;
+                            m_testPos = 0;
+                            m_time = EditorApplication.timeSinceStartup;
+                            EditorApplication.update += PlayDebug;
+                        }
+                    }
+                }
+                EditorGUI.indentLevel--;
+            }
+        }
+
+        private void PlayDebug()
+        {
+            m_testPos = (float)(EditorApplication.timeSinceStartup - m_time)/5f;
+            Repaint();
+            if(m_testPos >= 1)
+            {
+                m_play = false;
+                m_testPos = 1;
+                EditorApplication.update -= PlayDebug;
+            }
+        }
+
+        public override void OnInspectorGUI()
+        {
+            GenerateStyles();
+
+
+            serializedObject.Update();
 
             GUILayout.Space(10);
-            GUILayout.Label("Debug");
-            testPos = EditorGUILayout.Slider(testPos, 0, 1);
-            var col = m_asset.Evaluate(testPos);
-            Rect r2 = GUILayoutUtility.GetRect(10, 10);
-            EditorGUILayout.ColorField(col);
+
+            DrawGradientTexture(out var rect);
+            DrawColorKeys(rect);
+
+            HandleDrag(rect);
+
+            AddRemoveButtons();
+
+
+            GUILayout.Space(10);
+            DrawSelectedPointBox();
+            GUILayout.Space(10);
+            ExportButton();
+
+            GUILayout.Space(10);
+
+            DrawDebug();
 
 
             serializedObject.ApplyModifiedProperties();
