@@ -1,0 +1,12 @@
+{
+    "name": "com.toorah-games.gradienttool",
+    "version": "1.0.0",
+    "displayName": "Gradient Tool",
+    "description": "Create Gradients",
+    "unity": "2020.1",
+    "author": {
+        "name": "Atahan Tugra Kiltan",
+        "email": "",
+        "url": ""
+    }
+}

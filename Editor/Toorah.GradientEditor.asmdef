@@ -1,0 +1,19 @@
+{
+    "name": "Toorah.GradientEditor",
+    "rootNamespace": "Toorah.GradientEditor",
+    "references": [
+        "GUID:baf3d4a4815644747b63f0c1401e0b6c",
+        "GUID:4860a40bd7024c44ba04ff73521f4e3c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
