@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Toorah.Drawing;
 using Toorah.Gradients;
@@ -38,7 +39,7 @@ namespace Toorah.GradientEditor
                 m_gradientMaterial.SetFloatArray("_Positions", new float[100]);
             }
             if (!m_gradientTexture)
-                m_gradientTexture = new RenderTexture(2048, 2, 32);
+                m_gradientTexture = new RenderTexture(2048, 4, 32);
 
             EditorApplication.update -= Update;
             EditorApplication.update += Update;
@@ -147,7 +148,23 @@ namespace Toorah.GradientEditor
                 p.color = EditorGUILayout.ColorField(p.color);
                 p.position = EditorGUILayout.Slider(p.position, 0, 1);
             }
+            GUILayout.Space(10);
+            if (GUILayout.Button("Export"))
+            {
+                var path = EditorUtility.SaveFilePanelInProject("Gradient to Texture", "Gradient", "png", "");
+                if(path != "")
+                {
+                    Texture2D tex = new Texture2D(2048, 4);
+                    RenderTexture.active = m_gradientTexture;
+                    tex.ReadPixels(new Rect(0, 0, m_gradientTexture.width, m_gradientTexture.height), 0, 0);
+                    tex.Apply();
 
+                    byte[] bytes = tex.EncodeToPNG();
+                    File.WriteAllBytes(path, bytes);
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
+                }
+            }
 
             GUILayout.Space(10);
             GUILayout.Label("Debug");
