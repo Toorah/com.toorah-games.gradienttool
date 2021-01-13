@@ -1,4 +1,8 @@
 # com.toorah-games.gradienttool
  
-This tool is dependent on:
+## Dependencies:
 - https://github.com/Toorah/com.toorah-games.drawing
+
+## How to Use
+right-click in your Project Window and select:
+> Gradient/Create Gradient
