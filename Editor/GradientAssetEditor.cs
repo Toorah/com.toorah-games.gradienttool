@@ -22,6 +22,9 @@ namespace Toorah.GradientEditor
         [SerializeField] GradientKey m_selectedPoint;
         [SerializeField] GradientKey m_dragging;
 
+        bool m_copyGradient;
+        Gradient m_testGradient = new Gradient();
+
         bool m_showDebug;
 
         private void OnEnable()
@@ -227,6 +230,27 @@ namespace Toorah.GradientEditor
                             m_testPos = 0;
                             m_time = EditorApplication.timeSinceStartup;
                             EditorApplication.update += PlayDebug;
+                        }
+                    }
+
+                    m_copyGradient = EditorGUILayout.Foldout(m_copyGradient, "Copy Gradient", true);
+                    if (m_copyGradient)
+                    {
+                        m_testGradient = EditorGUILayout.GradientField(m_testGradient);
+                        if(GUILayout.Button("Copy Cradient"))
+                        {
+                            serializedObject.Update();
+                            m_points.Clear();
+                            var colors = m_testGradient.colorKeys;
+                            for(int i = 0; i < colors.Length; i++)
+                            {
+                                colors[i].color.a = m_testGradient.Evaluate(colors[i].time).a;
+                                var p = new GradientKey(colors[i].color, colors[i].time);
+                                m_points.Add(p);
+                            }
+                            EditorUtility.SetDirty(m_asset);
+                            serializedObject.ApplyModifiedProperties();
+                            m_copyGradient = false;
                         }
                     }
                 }

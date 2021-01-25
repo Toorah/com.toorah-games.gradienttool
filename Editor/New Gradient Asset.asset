@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80cc3ad478f682d42a394744a8352b43, type: 3}
+  m_Name: New Gradient Asset
+  m_EditorClassIdentifier: 
+  keys:
+  - color: {r: 0, g: 0, b: 0, a: 1}
+    position: 0
+  - color: {r: 1.1486983, g: 0.80794203, b: 0.52265775, a: 1}
+    position: 0.2411841
+  - color: {r: 1, g: 0.94592327, b: 0.8141227, a: 1}
+    position: 0.32353705
+  - color: {r: 1, g: 0.9778565, b: 0.8742138, a: 1}
+    position: 0.5000076
+  - color: {r: 0.9924985, g: 0.92156297, b: 0.8133053, a: 1}
+    position: 0.68235296
+  - color: {r: 1.4741087, g: 0.439855, b: 0.17831959, a: 1}
+    position: 0.8147097
+  - color: {r: 1.5676355, g: 0.180188, b: 0.41443238, a: 1}
+    position: 0.85000384
+  - color: {r: 0, g: 0, b: 0, a: 1}
+    position: 0.90882736
