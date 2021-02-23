@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "displayName": "Gradient Tool",
     "description": "Create Gradients",
+    "dependencies": {
+        "com.toorah-games.drawing": "1.0.0"
+    },
     "unity": "2020.1",
     "author": {
         "name": "Atahan Tuğra Kiltan"
