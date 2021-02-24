@@ -5,7 +5,7 @@ Shader "Hidden/GradientEditor"
 	Properties
 	{
 		_Count("Count", Float) = 0
-
+		_Mode("Mode", Int) = 0
 	}
 	
 	SubShader
@@ -69,9 +69,14 @@ Shader "Hidden/GradientEditor"
 			};
 
 			uniform float _Count;
-			float4 MyCustomExpression1( float count, float2 uv )
+			uniform int _Mode;
+			float4 MyCustomExpression1(float count, float2 uv)
 			{
 				return Gradient(uv, _Colors, _Positions, count);
+			}
+			float4 MyCustomExpression2(float count, float2 uv)
+			{
+				return GradientBars(uv, _Colors, _Positions, count);
 			}
 			
 
@@ -116,10 +121,11 @@ Shader "Hidden/GradientEditor"
 				float count1 = _Count;
 				float2 texCoord3 = i.ase_texcoord1.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 uv1 = texCoord3;
-				float4 localMyCustomExpression1 = MyCustomExpression1( count1 , uv1 );
-				
-				
-				finalColor = localMyCustomExpression1;
+				if(_Mode == 0)
+					finalColor = MyCustomExpression1(count1, uv1);
+				else if(_Mode == 1)
+					finalColor = MyCustomExpression2(count1, uv1);
+
 				return finalColor;
 			}
 			ENDCG

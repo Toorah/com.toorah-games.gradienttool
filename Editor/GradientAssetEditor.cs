@@ -21,9 +21,13 @@ namespace Toorah.GradientEditor
         [SerializeField] List<GradientKey> m_points => m_asset.keys;
         [SerializeField] GradientKey m_selectedPoint;
         [SerializeField] GradientKey m_dragging;
+        [SerializeField] GradientAsset.Mode Mode { get => m_asset.mode; set => m_asset.mode = value; }
 
         bool m_copyGradient;
         Gradient m_testGradient = new Gradient();
+
+        Color[] m_colors = new Color[100];
+        float[] m_positions = new float[100];
 
         bool m_showDebug;
 
@@ -37,9 +41,12 @@ namespace Toorah.GradientEditor
                 m_gradientShader = Shader.Find("Hidden/GradientEditor");
             if (!m_gradientMaterial)
             {
+                m_colors = new Color[100];
+                m_positions = new float[100];
+
                 m_gradientMaterial = new Material(m_gradientShader);
-                m_gradientMaterial.SetColorArray("_Colors", new Color[100]);
-                m_gradientMaterial.SetFloatArray("_Positions", new float[100]);
+                m_gradientMaterial.SetColorArray("_Colors", m_colors);
+                m_gradientMaterial.SetFloatArray("_Positions", m_positions);
             }
             if (!m_gradientTexture)
                 m_gradientTexture = new RenderTexture(2048, 4, 32);
@@ -59,17 +66,14 @@ namespace Toorah.GradientEditor
             {
                 m_asset.keys = m_points.OrderBy(x => x.position).ToList();
 
-                Color[] colors = new Color[m_points.Count];
-                float[] positions = new float[m_points.Count];
-
                 for (int i = 0; i < m_points.Count; i++)
                 {
-                    colors[i] = m_points[i].color;
-                    positions[i] = m_points[i].position;
+                    m_colors[i] = m_points[i].color;
+                    m_positions[i] = m_points[i].position;
                 }
-
-                m_gradientMaterial.SetColorArray("_Colors", colors);
-                m_gradientMaterial.SetFloatArray("_Positions", positions);
+                m_gradientMaterial.SetInt("_Mode", (int)Mode);
+                m_gradientMaterial.SetColorArray("_Colors", m_colors);
+                m_gradientMaterial.SetFloatArray("_Positions", m_positions);
                 m_gradientMaterial.SetFloat("_Count", m_points.Count);
                 Repaint();
 
@@ -286,6 +290,7 @@ namespace Toorah.GradientEditor
 
             AddRemoveButtons();
 
+            Mode = (GradientAsset.Mode)EditorGUILayout.EnumPopup("Mode", Mode);
 
             GUILayout.Space(10);
             DrawSelectedPointBox();
