@@ -46,7 +46,7 @@ Shader "Hidden/GradientEditor"
 			#include "UnityCG.cginc"
 			float4 _Colors[100];
 			float _Positions[100];
-			#include "Assets/com.toorah-games.gradienttool/Editor/Gradient.cginc"
+			#include "Gradient.cginc"
 
 
 			struct appdata
